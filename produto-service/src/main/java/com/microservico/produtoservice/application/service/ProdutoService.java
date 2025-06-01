@@ -3,6 +3,8 @@ package com.microservico.produtoservice.application.service;
 import com.microservico.produtoservice.application.usecase.CriarProduto;
 import com.microservico.produtoservice.application.usecase.AtualizarProduto;
 import com.microservico.produtoservice.application.usecase.BuscarProduto;
+import com.microservico.produtoservice.domain.exception.DuplicatedSkuException;
+import com.microservico.produtoservice.domain.exception.ProdutoNotFoundException;
 import com.microservico.produtoservice.domain.model.Produto;
 import com.microservico.produtoservice.domain.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,29 +22,35 @@ public class ProdutoService implements CriarProduto, AtualizarProduto, BuscarPro
     @Override
     public Produto criarProduto(Produto produto) {
         if (produtoRepository.findBySku(produto.getSku()).isPresent()) {
-            throw new RuntimeException("SKU já cadastrado");
+            throw new DuplicatedSkuException("SKU já cadastrado. Por favor, verifique e tente novamente.");
         }
         return produtoRepository.save(produto);
     }
 
     @Override
-    public Produto atualizarProduto(Long id, Produto produto) {
+    public Produto atualizarProduto(String id, Produto produto) {
         Produto produtoExistente = produtoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new ProdutoNotFoundException("Produto não encontrado"));
+
+        if (!produtoExistente.getSku().equals(produto.getSku())) {
+            produtoRepository.findBySku(produto.getSku()).ifPresent(p -> {
+                throw new DuplicatedSkuException("SKU já cadastrado por outro produto");
+            });
+            produtoExistente.setSku(produto.getSku());
+        }
 
         produtoExistente.setNome(produto.getNome());
         produtoExistente.setPreco(produto.getPreco());
-        // SKU geralmente não é alterado, mas pode ser incluído se necessário
-        // produtoExistente.setSku(produto.getSku());
 
         return produtoRepository.save(produtoExistente);
     }
 
     @Override
-    public Optional<Produto> porId(Long id) {
+    public Optional<Produto> porId(String id) {
         return produtoRepository.findById(id);
     }
 
+    @Override
     public Optional<Produto> porSku(String sku) {
         return produtoRepository.findBySku(sku);
     }

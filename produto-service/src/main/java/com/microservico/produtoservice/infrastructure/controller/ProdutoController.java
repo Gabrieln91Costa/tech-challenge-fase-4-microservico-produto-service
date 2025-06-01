@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/produtos")
@@ -17,23 +18,28 @@ public class ProdutoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Produto criarCliente(@RequestBody Produto cliente) {
-        return produtoService.criarProduto(cliente);
+    public Produto criarProduto(@RequestBody Produto produto) {
+        return produtoService.criarProduto(produto);
     }
 
     @GetMapping("/{id}")
-    public Produto buscarCliente(@PathVariable Long id) {
+    public Produto buscarPorId(@PathVariable String id) {
         return produtoService.porId(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
     }
 
     @GetMapping
-    public List<Produto> listarClientes() {
+    public List<Produto> listarTodos() {
         return produtoService.listarTodos();
     }
 
     @PutMapping("/{id}")
-    public Produto atualizarCliente(@PathVariable Long id, @RequestBody Produto cliente) {
-        return produtoService.atualizarProduto(id, cliente);
+    public Produto atualizarProduto(@PathVariable String id, @RequestBody Produto produtoAtualizado) {
+        return produtoService.atualizarProduto(id, produtoAtualizado);
+    }
+
+    @GetMapping("/sku/{sku}")
+    public Optional<Produto> buscarPorSku(@PathVariable String sku) {
+        return produtoService.porSku(sku);
     }
 }

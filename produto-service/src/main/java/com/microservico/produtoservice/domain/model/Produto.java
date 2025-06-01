@@ -1,24 +1,21 @@
-// domain/model/Produto.java
 package com.microservico.produtoservice.domain.model;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-@Table(name = "produtos")
+@Document(collection = "produtos")  // Define a coleção no MongoDB
 public class Produto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;  // MongoDB usa ID como String (ObjectId)
 
     private String nome;
 
-    @Column(unique = true, nullable = false)
     private String sku;
 
     private Double preco;
